@@ -1,5 +1,9 @@
 name: Test
 
+env:
+  DEFAULT_RG_PATTERN: 'secr-*-dev'
+  DEV_SUBSCRIPTION_ID: 8d50b8d0-350c-4adc-88a6-c6bec55e57d7
+  
 on:
   push:
     branches: [ main ]
@@ -11,10 +15,6 @@ on:
       resourceGroupPattern:
         default: ${{ env.DEFAULT_RG_PATTERN }}
         type: string
-
-env:
-  DEFAULT_RG_PATTERN: 'secr-*-dev'
-  DEV_SUBSCRIPTION_ID: 8d50b8d0-350c-4adc-88a6-c6bec55e57d7
 
 permissions:
   id-token: write
