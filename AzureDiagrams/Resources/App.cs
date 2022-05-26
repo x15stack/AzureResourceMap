@@ -19,11 +19,8 @@ public class App : AzureResource, ICanBeAccessedViaAHostName, ICanEgressViaAVnet
 
     public override string Image => Kind switch
     {
-        "functionapp,workflowapp" => "img/lib/azure2/integration/Logic_Apps.svg",
-        "app,linux,container" => "img/lib/azure2/containers/App_Services.svg",
-        "app,container" => "img/lib/azure2/containers/App_Services.svg",
-        "functionapp,linux" => "img/lib/azure2/iot/Function_Apps.svg",
-        "functionapp" => "img/lib/azure2/iot/Function_Apps.svg",
+        { } str when str.Contains("workflowapp") =>"img/lib/azure2/integration/Logic_Apps.svg",
+        { } str when str.Contains("functionapp") =>"img/lib/azure2/compute/Function_Apps.svg", 
         _ => "img/lib/azure2/app_services/App_Services.svg"
     };
 
@@ -110,24 +107,24 @@ public class App : AzureResource, ICanBeAccessedViaAHostName, ICanEgressViaAVnet
         {
             var appInsights = allResources.OfType<AppInsights>()
                 .SingleOrDefault(x => x.InstrumentationKey == AppInsightsKey);
-            if (appInsights != null) CreateFlowTo(appInsights, "apm", FlowEmphasis.LessImportant);
+            if (appInsights != null) CreateFlowTo(appInsights, "apm", Plane.Diagnostics);
         }
 
         if (_dockerRepo != null)
         {
-            this.CreateFlowToHostName(allResources, _dockerRepo, "pulls");
+            this.CreateFlowToHostName(allResources, _dockerRepo, "container pull", Plane.Runtime);
         }
 
         if (_searchService != null)
         {
-            this.CreateFlowToHostName(allResources, _searchService, "uses", FlowEmphasis.Inferred);
+            this.CreateFlowToHostName(allResources, _searchService, "search api", Plane.Runtime);
         }
 
         _hostNameDiscoverer.BuildRelationships(this, allResources);
 
         if (VNetIntegration != null)
         {
-            CreateFlowTo(VNetIntegration);
+            CreateFlowTo(VNetIntegration, Plane.All);
         }
 
         base.BuildRelationships(allResources);

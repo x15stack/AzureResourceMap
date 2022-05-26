@@ -7,13 +7,17 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      resourceGroupPattern:
+        default: 'secr-*-dev'
+        type: string
+
+env:
+  DEV_SUBSCRIPTION_ID: 8d50b8d0-350c-4adc-88a6-c6bec55e57d7
 
 permissions:
   id-token: write
   contents: read
-
-env:
-  DEV_SUBSCRIPTION_ID: 8d50b8d0-350c-4adc-88a6-c6bec55e57d7
 
 jobs:
   generate-test-diagram:
@@ -37,12 +41,16 @@ jobs:
             echo "::set-output name=token::$token"
 
       - name: x15stack-azure-diagrams-generator
-        uses: x15stack/AzureResourceMap@v0.6.3
+        uses: x15stack/AzureResourceMap@v0.7.5
         with:
           subscriptionId: ${{ env.DEV_SUBSCRIPTION_ID }}
-          resourceGroup: "secr-*-dev"
+          resourceGroup: "${{ github.event.inputs.resourceGroupPattern || 'secr-*-dev' }}"
           outputFileName: "azurediagram.drawio"
           accessToken: ${{ steps.token.outputs.token }}
+          showDiagnostics: false
+          showIdentity: false
+          showRuntime: true
+          showInferred: true
 
       - uses: actions/upload-artifact@v3
         with:

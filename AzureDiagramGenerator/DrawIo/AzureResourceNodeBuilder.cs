@@ -27,7 +27,7 @@ public class AzureResourceNodeBuilder
     {
         foreach (var link in _resource.Links)
         {
-            if (!diagramAdjustor.DisplayLink(link)) continue;
+            var isLinkVisible = diagramAdjustor.DisplayLink(link);
 
             var fromResource = diagramAdjustor.ReplacementFor(link.From);
             var toResource = diagramAdjustor.ReplacementFor(link.To);
@@ -53,7 +53,8 @@ public class AzureResourceNodeBuilder
             {
                 var from = nodes[fromResource].Single(x => ((CustomUserData)x.UserData).Id == fromResource.InternalId);
                 var to = nodes[toResource].Single(x => ((CustomUserData)x.UserData).Id == toResource.InternalId);
-                yield return AzureResourceDrawer.CreateSimpleEdge(from, to, link.Details, link.FlowEmphasis);
+                yield return AzureResourceDrawer.CreateSimpleEdge(link.From, link.To, from, to, link.Details,
+                    link.Plane, isLinkVisible);
             }
         }
     }
@@ -82,7 +83,8 @@ public class AzureResourceNodeBuilder
             foreach (var contained in _resource.ContainedResources)
             {
                 var nodeBuilder = resourceNodeBuilders[contained];
-                foreach (var containedNode in CreateOtherResourceNodes(nodeBuilder, resourceNodeBuilders, diagramAdjustor))
+                foreach (var containedNode in CreateOtherResourceNodes(nodeBuilder, resourceNodeBuilders,
+                             diagramAdjustor))
                 {
                     if (containedNode.Item2.ClusterParent == null) container.AddChild(containedNode.Item2);
                     yield return containedNode;
